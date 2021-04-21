@@ -28,11 +28,11 @@ class _BookAppState extends State<LukiBookApp> {
   }
 }
 
-class LOutRouterState extends ChangeNotifier {
+class OutRouterState extends ChangeNotifier {
   int _selectedIndex;
   bool _isLogged = false;
   bool _isUnknown = false;
-  String _unknownLocation;
+  // String _unknownLocation;
 
   Book _selectedBook;
 
@@ -42,7 +42,7 @@ class LOutRouterState extends ChangeNotifier {
     Book('Fahrenheit 451', 'Ray Bradbury'),
   ];
 
-  LOutRouterState() : _selectedIndex = 0;
+  OutRouterState() : _selectedIndex = 0;
 
   int get selectedMenu => _selectedIndex;
 
@@ -70,16 +70,18 @@ class LOutRouterState extends ChangeNotifier {
   // }
 
   bool get isUnknown => _isUnknown;
-  String get unknownLocation => _unknownLocation;
+  // String get unknownLocation => _unknownLocation;
 
-  void setUnknown({@required bool status, String location}) {
-    assert(
-        (status == true && location == null),
-        'Status unkown = true, harus ada location'
-        'Status unkown = false, ga perlu location');
+  void setUnknown({@required bool status, 
+  // String location
+  }) {
+    // assert(
+    //     (status == true && location == null),
+    //     'Status unkown = true, harus ada location'
+    //     'Status unkown = false, ga perlu location');
 
     _isUnknown = status;
-    _unknownLocation = location;
+    // _unknownLocation = location;
     notifyListeners();
   }
 
@@ -111,36 +113,27 @@ class OutRouteInformationParser extends RouteInformationParser<OutRoutePath> {
       RouteInformation routeInformation) async {
     // nanganin input route manual dari user.
     final uri = Uri.parse(routeInformation.location);
-    OutRoutePath path = UnknownPath(routeInformation.location);
+    // OutRoutePath path = UnknownPath(routeInformation.location);
     if (uri.pathSegments.isEmpty) {
-      path = BooksListPath();
-    } else {
-      switch (uri.pathSegments.first) {
-        case "settings":
-          path = BooksSettingsPath();
-          break;
-
-        case "home":
-          path = BooksListPath();
-          break;
-
-        case "book":
-          if (uri.pathSegments.length >= 2) {
-            if (uri.pathSegments[0] == 'book') {
-              path = BooksDetailsPath(int.tryParse(uri.pathSegments[1]));
-            }
-          }
-          path = BooksListPath();
-
-          break;
-        case "login":
-          path = UnLoggedPath();
-          break;
-        default:
+      return BooksListPath();
+    } else if (uri.pathSegments.first == "setting") {
+      return BooksSettingsPath();
+    } else if (uri.pathSegments.first == "home") {
+      return BooksListPath();
+    } else if (uri.pathSegments.first == "book") {
+      if (uri.pathSegments.length >= 2) {
+        if (uri.pathSegments[0] == 'book') {
+          return BooksDetailsPath(int.tryParse(uri.pathSegments[1]));
+        }
       }
+      return BooksListPath();
+    } else if (uri.pathSegments.first == "login") {
+      return UnLoggedPath();
+    } else {
+      return UnknownPath(
+        // routeInformation.location
+        );
     }
-
-    return path;
   }
 
   @override
@@ -155,7 +148,7 @@ class OutRouteInformationParser extends RouteInformationParser<OutRoutePath> {
       return RouteInformation(location: '/book/${config.id}');
     }
     if (config is UnknownPath) {
-      return RouteInformation(location: '${config.location}');
+      return RouteInformation(location: '/404');
     }
     if (config is UnLoggedPath) {
       return RouteInformation(location: '/login');
@@ -168,7 +161,7 @@ class OutRouterDelegate extends RouterDelegate<OutRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<OutRoutePath> {
   final GlobalKey<NavigatorState> navigatorKey;
 
-  LOutRouterState appState = LOutRouterState();
+  OutRouterState appState = OutRouterState();
 
   OutRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>() {
     appState.addListener(notifyListeners);
@@ -179,7 +172,9 @@ class OutRouterDelegate extends RouterDelegate<OutRoutePath>
       return UnLoggedPath();
     } else {
       if (appState.isUnknown) {
-        return UnknownPath(appState.unknownLocation);
+        return UnknownPath(
+          // appState.unknownLocation
+          );
       } else {
         if (appState.selectedMenu == 1) {
           return BooksSettingsPath();
@@ -231,7 +226,9 @@ class OutRouterDelegate extends RouterDelegate<OutRoutePath>
     } else {
       appState.setLogged = true;
       if (path is UnknownPath) {
-        appState.setUnknown(status: true, location: path.location);
+        appState.setUnknown(status: true, 
+        // location: path.location
+        );
       } else {
         appState.setUnknown(status: false);
         if (path is BooksListPath) {
@@ -257,9 +254,9 @@ class BooksListPath extends OutRoutePath {}
 class BooksSettingsPath extends OutRoutePath {}
 
 class UnknownPath extends OutRoutePath {
-  final String location;
+  // final String location;
 
-  UnknownPath(this.location);
+  // UnknownPath(this.location);
 }
 
 class UnLoggedPath extends OutRoutePath {}
@@ -272,7 +269,7 @@ class BooksDetailsPath extends OutRoutePath {
 
 // Widget that contains the AdaptiveNavigationScaffold
 class AppShell extends StatefulWidget {
-  final LOutRouterState appState;
+  final OutRouterState appState;
 
   AppShell({
     @required this.appState,
@@ -343,9 +340,9 @@ class InnerRouterDelegate extends RouterDelegate<OutRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<OutRoutePath> {
   //Inner Route Delegate...
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  LOutRouterState get appState => _appState;
-  LOutRouterState _appState;
-  set appState(LOutRouterState value) {
+  OutRouterState get appState => _appState;
+  OutRouterState _appState;
+  set appState(OutRouterState value) {
     if (value == _appState) {
       return;
     }
@@ -383,6 +380,15 @@ class InnerRouterDelegate extends RouterDelegate<OutRoutePath>
         appState.selectedBook = null;
         notifyListeners();
         return route.didPop(result);
+        // if (!route.didPop(result)) {
+        //   return false;
+        // }
+
+        // if (appState.selectedBook != null) {
+        //   appState.selectedBook = null;
+        // }
+        // notifyListeners();
+        // return true;
       },
     );
   }

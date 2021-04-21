@@ -4,7 +4,7 @@ import 'package:web_10/luki/main.dart';
 // import '../main.dart';
 
 class LoginPage extends StatelessWidget {
-  final LOutRouterState appState;
+  final OutRouterState appState;
 
   const LoginPage({
     Key key,
