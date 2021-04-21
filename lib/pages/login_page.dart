@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:web_10/luki/main.dart';
+
+// import '../main.dart';
 
 class LoginPage extends StatelessWidget {
+  final LOutRouterState appState;
+
+  const LoginPage({
+    Key key,
+    @required this.appState,
+  }) : super(key: key);
   @override
   Widget build(context) {
     return Scaffold(
@@ -37,7 +46,7 @@ class LoginPage extends StatelessWidget {
                       child:
                           Text("Log in", style: TextStyle(color: Colors.white)),
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, "/home");
+                        appState.setLogged = true;
                       },
                     )
                   ],
