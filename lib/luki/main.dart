@@ -32,7 +32,7 @@ class OutRouterState extends ChangeNotifier {
   int _selectedIndex;
   bool _isLogged = false;
   bool _isUnknown = false;
-  // String _unknownLocation;
+  String _unknownLocation;
 
   Book _selectedBook;
 
@@ -70,18 +70,18 @@ class OutRouterState extends ChangeNotifier {
   // }
 
   bool get isUnknown => _isUnknown;
-  // String get unknownLocation => _unknownLocation;
+  String get unknownLocation => _unknownLocation;
 
-  void setUnknown({@required bool status, 
-  // String location
-  }) {
-    // assert(
-    //     (status == true && location == null),
-    //     'Status unkown = true, harus ada location'
-    //     'Status unkown = false, ga perlu location');
+  void setUnknown(bool status, {String location}) {
+    debugPrint(location);
+    //assert akan marah jika ada keadaan yang membuatnya gagal, dan hanya bisa dideteksi di mode debug, bgsd!
+    assert(
+        (status == true && location != null || status == false),
+        'Status unkown = true, harus ada location '
+        'Status unkown = false, ga perlu location');
 
     _isUnknown = status;
-    // _unknownLocation = location;
+    _unknownLocation = location;
     notifyListeners();
   }
 
@@ -116,7 +116,7 @@ class OutRouteInformationParser extends RouteInformationParser<OutRoutePath> {
     // OutRoutePath path = UnknownPath(routeInformation.location);
     if (uri.pathSegments.isEmpty) {
       return BooksListPath();
-    } else if (uri.pathSegments.first == "setting") {
+    } else if (uri.pathSegments.first == "settings") {
       return BooksSettingsPath();
     } else if (uri.pathSegments.first == "home") {
       return BooksListPath();
@@ -130,9 +130,7 @@ class OutRouteInformationParser extends RouteInformationParser<OutRoutePath> {
     } else if (uri.pathSegments.first == "login") {
       return UnLoggedPath();
     } else {
-      return UnknownPath(
-        // routeInformation.location
-        );
+      return UnknownPath(routeInformation.location);
     }
   }
 
@@ -148,7 +146,7 @@ class OutRouteInformationParser extends RouteInformationParser<OutRoutePath> {
       return RouteInformation(location: '/book/${config.id}');
     }
     if (config is UnknownPath) {
-      return RouteInformation(location: '/404');
+      return RouteInformation(location: '${config.location}');
     }
     if (config is UnLoggedPath) {
       return RouteInformation(location: '/login');
@@ -172,9 +170,7 @@ class OutRouterDelegate extends RouterDelegate<OutRoutePath>
       return UnLoggedPath();
     } else {
       if (appState.isUnknown) {
-        return UnknownPath(
-          // appState.unknownLocation
-          );
+        return UnknownPath(appState.unknownLocation);
       } else {
         if (appState.selectedMenu == 1) {
           return BooksSettingsPath();
@@ -212,6 +208,9 @@ class OutRouterDelegate extends RouterDelegate<OutRoutePath>
         if (appState.selectedBook != null) {
           appState.selectedBook = null;
         }
+        if (appState.isUnknown == true) {
+          appState.setUnknown(false);
+        }
         notifyListeners();
         return true;
       },
@@ -226,11 +225,9 @@ class OutRouterDelegate extends RouterDelegate<OutRoutePath>
     } else {
       appState.setLogged = true;
       if (path is UnknownPath) {
-        appState.setUnknown(status: true, 
-        // location: path.location
-        );
+        appState.setUnknown(true, location: path.location);
       } else {
-        appState.setUnknown(status: false);
+        appState.setUnknown(false);
         if (path is BooksListPath) {
           appState.selectedMenu = 0;
           appState.selectedBook = null;
@@ -254,9 +251,9 @@ class BooksListPath extends OutRoutePath {}
 class BooksSettingsPath extends OutRoutePath {}
 
 class UnknownPath extends OutRoutePath {
-  // final String location;
+  final String location;
 
-  // UnknownPath(this.location);
+  UnknownPath(this.location);
 }
 
 class UnLoggedPath extends OutRoutePath {}
@@ -378,8 +375,12 @@ class InnerRouterDelegate extends RouterDelegate<OutRoutePath>
       ],
       onPopPage: (route, result) {
         appState.selectedBook = null;
+        // if (appState.isUnknown == true) {
+        //   appState.setUnknown = false;
+        // }
         notifyListeners();
         return route.didPop(result);
+
         // if (!route.didPop(result)) {
         //   return false;
         // }
